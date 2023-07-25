@@ -1,0 +1,38 @@
+mkdir sync_system_time
+cd sync_system_time
+npm init -y
+npm install typescript ts-node ntp-client
+import { getNetworkTime } from 'ntp-client';
+
+async function syncSystemTime(): Promise<void> {
+  try {
+    const ntpServer = 'pool.ntp.org'; // Replace with the NTP server of your choice
+    console.log('Synchronizing system time...');
+    const ntpTime = await getNetworkTime(ntpServer);
+    const systemTime = new Date(ntpTime);
+    console.log('NTP Time:', ntpTime);
+    console.log('System Time:', systemTime);
+
+    // Set the system time
+    process.env.TZ = 'UTC'; // Set the time zone to UTC to avoid local timezone inconsistencies
+    process.env.SUDO_USER = 'root'; // Set this environment variable to avoid issues when running as root
+    const setSystemTimeCommand = `date -u --set="${systemTime.toISOString()}"`;
+    await new Promise<void>((resolve, reject) => {
+      const { exec } = require('child_process');
+      exec(setSystemTimeCommand, (error: Error | null, stdout: string, stderr: string) => {
+        if (error) {
+          reject(error);
+        } else {
+          console.log('System time synchronized successfully.');
+          resolve();
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Error synchronizing system time:', error);
+  }
+}
+
+syncSystemTime();
+npx tsc sync_system_time.ts
+npx ts-node sync_system_time.js
