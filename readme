@@ -1,1 +1,1 @@
-
+To synchronize the system time in a Node.js environment using TypeScript, you can use the ntp-client package, which allows you to request the Network Time Protocol (NTP) server's time and adjust your system's time accordingly. Before running the script, make sure you have Node.js and npm installed.
